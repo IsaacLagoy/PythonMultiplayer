@@ -1,85 +1,32 @@
-import pygame
-from network import Network
+import socket
+import threading
 
-width = 500
-height = 500
-win = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Client")
+HOST = input("Enter the host IP: ")  # Ask for the host's local IP
+PORT = 5555
 
-clientNumber = 0
+def receive_messages(client_socket: socket.socket):
+    """Handles receiving messages from the server."""
+    while True:
+        try:
+            message = client_socket.recv(1024).decode("utf-8")
+            print("\n" + message)  # Print received messages
+        except:
+            print("Connection lost.")
+            break
 
+# Connect to the server
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((HOST, PORT))
 
-class Player():
-    def __init__(self, x, y, width, height, color):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.color = color
-        self.rect = (x,y,width,height)
-        self.vel = 3
+# Start a thread to receive messages
+thread = threading.Thread(target=receive_messages, args=(client,))
+thread.daemon = True
+thread.start()
 
-    def draw(self, win):
-        pygame.draw.rect(win, self.color, self.rect)
+while True:
+    message = input("You: ")
+    if message.lower() == "quit":
+        break
+    client.send(message.encode("utf-8"))
 
-    def move(self):
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_LEFT]:
-            self.x -= self.vel
-
-        if keys[pygame.K_RIGHT]:
-            self.x += self.vel
-
-        if keys[pygame.K_UP]:
-            self.y -= self.vel
-
-        if keys[pygame.K_DOWN]:
-            self.y += self.vel
-
-        self.update()
-
-    def update(self):
-        self.rect = (self.x, self.y, self.width, self.height)
-
-
-def read_pos(str):
-    str = str.split(",")
-    return int(str[0]), int(str[1])
-
-
-def make_pos(tup):
-    return str(tup[0]) + "," + str(tup[1])
-
-
-def redrawWindow(win,player, player2):
-    win.fill((255,255,255))
-    player.draw(win)
-    player2.draw(win)
-    pygame.display.update()
-
-
-def main():
-    run = True
-    n = Network()
-    startPos = read_pos(n.getPos())
-    p = Player(startPos[0],startPos[1],100,100,(0,255,0))
-    p2 = Player(0,0,100,100,(255,0,0))
-    clock = pygame.time.Clock()
-
-    while run:
-        clock.tick(60)
-        p2Pos = read_pos(n.send(make_pos((p.x, p.y))))
-        p2.x = p2Pos[0]
-        p2.y = p2Pos[1]
-        p2.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
-
-        p.move()
-        redrawWindow(win, p, p2)
-
-main()
+client.close()
