@@ -1,15 +1,21 @@
 import socket
 import threading
+import json
 
 HOST = input("Enter the host IP: ")  # Ask for the host's local IP
 PORT = 5555
 
-def receive_messages(client_socket: socket.socket):
+def receive_messages(client_socket):
     """Handles receiving messages from the server."""
     while True:
         try:
             message = client_socket.recv(1024).decode("utf-8")
-            print("\n" + message)  # Print received messages
+            data = json.loads(message)  # Decode JSON
+
+            if data["type"] == "echo":
+                print(f"\n[SERVER] {data['message']}")
+            elif data["type"] == "broadcast":
+                print(f"\n[{data['from']}] {data['data']}")
         except:
             print("Connection lost.")
             break
@@ -27,6 +33,9 @@ while True:
     message = input("You: ")
     if message.lower() == "quit":
         break
-    client.send(message.encode("utf-8"))
+
+    # Send JSON message
+    json_message = json.dumps({"type": "chat", "player": "Player1", "message": message})
+    client.send(json_message.encode("utf-8"))
 
 client.close()

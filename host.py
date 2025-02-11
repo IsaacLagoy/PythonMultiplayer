@@ -1,11 +1,12 @@
 import socket
 import threading
+import json
 
 HOST = socket.gethostbyname(socket.gethostname())  # Host's local IP
-PORT = 5555  # Choose a free port
+PORT = 5555
 clients = []  # Store connected clients
 
-def handle_client(client_socket, address):
+def handle_client(client_socket: socket.socket, address):
     """Handles communication with a single client."""
     print(f"[NEW CONNECTION] {address} connected.")
     clients.append(client_socket)
@@ -15,13 +16,17 @@ def handle_client(client_socket, address):
             message = client_socket.recv(1024).decode("utf-8")
             if not message:
                 break
-            print(f"[{address}] {message}")
 
-            # Send the message back to the sender
-            client_socket.send(f"You said: {message}".encode("utf-8"))
+            # Decode JSON message
+            data = json.loads(message)
+            print(f"[{address}] {data}")
+
+            # Send back the message to the sender
+            response = json.dumps({"type": "echo", "message": f"You said: {data}"})
+            client_socket.send(response.encode("utf-8"))
 
             # Broadcast to other clients
-            broadcast(f"{address} said: {message}", client_socket)
+            broadcast(json.dumps({"type": "broadcast", "from": str(address), "data": data}), client_socket)
         except:
             break
 
@@ -30,7 +35,7 @@ def handle_client(client_socket, address):
     client_socket.close()
 
 def broadcast(message, sender_socket):
-    """Sends a message to all clients except the sender."""
+    """Sends a JSON message to all clients except the sender."""
     for client in clients:
         if client != sender_socket:
             try:
