@@ -8,6 +8,7 @@ class Client():
     def __init__(self) -> None:
         self.host = None
         self.port = 5555
+        self.data = {}
         
     def join(self, ip: str) -> None:
         self.host = ip
@@ -27,15 +28,17 @@ class Client():
         """
         while True:
             try:
+                print('listening')
                 message = self.client.recv(1024).decode("utf-8")
-                data = json.loads(message)  # Decode JSON
-
-                if data["type"] == "echo":
-                    print(f"\n[SERVER] {data['message']}")
-                elif data["type"] == "broadcast":
-                    print(f"\n[{data['from']}] {data['data']}")
-            except:
-                print("Connection lost.")
+                print('recieved')
+                if not message:
+                    break
+                
+                self.data = json.loads(message)  # Decode JSON
+                print(self.data)
+                    
+            except (socket.error, json.error) as e:
+                print(f"Connection lost. {e}")
                 break
             
     def send_message(self, message: str) -> None:

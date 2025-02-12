@@ -1,0 +1,33 @@
+import basilisk as bsk
+
+NUMBERS = [bsk.pg.K_0, bsk.pg.K_1, bsk.pg.K_2, bsk.pg.K_3, bsk.pg.K_4, bsk.pg.K_5, bsk.pg.K_6, bsk.pg.K_7, bsk.pg.K_8, bsk.pg.K_9]
+CHARACTERS = {
+    bsk.pg.K_a : 'a',
+    bsk.pg.K_b : 'b',
+    bsk.pg.K_c : 'c',
+    bsk.pg.K_d : 'd',
+    bsk.pg.K_e : 'e',
+    bsk.pg.K_f : 'f',
+    bsk.pg.K_g : 'g',
+    bsk.pg.K_h : 'h',
+    bsk.pg.K_i : 'i',
+    bsk.pg.K_j : 'j',
+    bsk.pg.K_k : 'k',
+    bsk.pg.K_l : 'l',
+    bsk.pg.K_m : 'm',
+    bsk.pg.K_n : 'n',
+    bsk.pg.K_o : 'o',
+    bsk.pg.K_p : 'p',
+    bsk.pg.K_q : 'q',
+    bsk.pg.K_r : 'r',
+    bsk.pg.K_r : 'r',
+    bsk.pg.K_s : 's',
+    bsk.pg.K_t : 't',
+    bsk.pg.K_u : 'u',
+    bsk.pg.K_v : 'v',
+    bsk.pg.K_w : 'w',
+    bsk.pg.K_x : 'x',
+    bsk.pg.K_y : 'y',
+    bsk.pg.K_z : 'z',
+    bsk.pg.K_UNDERSCORE : '_',
+}

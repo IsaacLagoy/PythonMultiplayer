@@ -2,6 +2,7 @@ import socket
 import json
 import threading
 import basilisk as bsk
+from player_client import PlayerClient
 
 
 class Host():
@@ -10,7 +11,7 @@ class Host():
         self.engine = engine
         self.host = self.get_local_ip()
         self.port = 5555
-        self.clients = []
+        self.clients: list[PlayerClient] = []
         
         thread = threading.Thread(target=self.start_server)
         thread.start()
@@ -25,14 +26,14 @@ class Host():
         """Starts the server and waits for client connections."""
         try:
         
-            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # 
             server.bind((self.host, self.port))
             server.listen()
 
             print(f"[SERVER STARTED] Listening on {self.host}:{self.port}")
 
             while True:
-                client_socket, client_address = server.accept()
+                client_socket, client_address = server.accept() # waits to recieve a new client
                 thread = threading.Thread(target=self.handle_client, args=(client_socket, client_address))
                 thread.start()
                 if not self.engine.running: raise RuntimeError('Engine stopped')
@@ -43,19 +44,20 @@ class Host():
             server.close()
             assert False, 'Game Closing :)'
 
-    def broadcast(self, message, sender_socket):
+    def broadcast(self, message: str, sender_socket = None):
         """Sends a JSON message to all clients except the sender."""
         for client in self.clients:
-            if client != sender_socket:
+            if client.socket != sender_socket:
                 try:
-                    client.send(message.encode("utf-8"))
+                    client.socket.send(message.encode("utf-8"))
                 except:
                     pass
 
     def handle_client(self, client_socket: socket.socket, address):
         """Handles communication with a single client."""
         print(f"[NEW CONNECTION] {address} connected.")
-        self.clients.append(client_socket)
+        player_client = PlayerClient(client_socket)
+        self.clients.append(player_client)
 
         while True:
             try:
@@ -65,17 +67,19 @@ class Host():
 
                 # Decode JSON message
                 data = json.loads(message)
-                print(f"[{address}] {data}")
-
-                # Send back the message to the sender
-                response = json.dumps({"type": "echo", "message": f"You said: {data}"})
-                client_socket.send(response.encode("utf-8"))
-
-                # Broadcast to other clients
-                self.broadcast(json.dumps({"type": "broadcast", "from": str(address), "data": data}), client_socket)
+                
+                if 'name' in data: 
+                    player_client.name = data['name']
+                    
             except:
                 break
             
         print(f"[DISCONNECTED] {address} disconnected.")
-        self.clients.remove(client_socket)
         client_socket.close()
+        
+        
+# change recv to recvfrom - allow only one server thread, allows you to know whose talking
+# change socket.SOCK_STREAM to socket.DGRAM
+# 
+# look for send broadcast message for "im joinable" on port that people should join on. Figure out how to recieve this on Python
+# look at how to do a network broadcast
