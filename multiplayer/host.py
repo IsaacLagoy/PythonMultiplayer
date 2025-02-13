@@ -62,7 +62,6 @@ class Host():
             if 'name' in message:
                 self.clients[address].name = message["name"]
                 
-                
             if 'position' in message: ...
                 
             if 'bullets' in message: ...
