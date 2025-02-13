@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import time
 
 
 class Client():
@@ -14,7 +15,7 @@ class Client():
         self.host = ip
         
         # Connect to the server
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.client.connect((self.host, self.port))
 
         # Start a thread to receive messages
@@ -27,25 +28,27 @@ class Client():
         Handles receiving messages from the server.
         """
         while True:
-            try:
-                print('listening')
-                message = self.client.recv(1024).decode("utf-8")
-                print('recieved')
-                if not message:
-                    break
-                
-                self.data = json.loads(message)  # Decode JSON
-                print(self.data)
-                    
-            except (socket.error, json.error) as e:
-                print(f"Connection lost. {e}")
+            # listeen for messages from the host
+            message, address = self.client.recvfrom(1024)
+            message = message.decode('utf-8')
+            if not message: continue
+            
+            # do something with the message
+            
+            
+            if not message:
                 break
+            
+            self.data = json.loads(message)
             
     def send_message(self, message: str) -> None:
         """
         Sends a message to the host
         """
-        self.client.send(message.encode("utf-8"))
+        try:
+            self.client.send(message.encode("utf-8"))
+        except:
+            pass
         
     def close(self) -> None:
         """

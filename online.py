@@ -1,11 +1,11 @@
-from game import Game
+from interface import Interface
 
                   
-game = Game()
+interface = Interface()
 
-while game.engine.running:
+while interface.engine.running:
     
-    game.broadcast_timer += game.engine.delta_time
+    interface.broadcast_timer += interface.engine.delta_time
     
-    game.get_ui()
-    game.engine.update()
+    interface.get_ui()
+    interface.engine.update()

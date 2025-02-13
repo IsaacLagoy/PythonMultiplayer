@@ -4,7 +4,7 @@ from client import Client
 from alphanumeric_storage import NUMBERS, CHARACTERS
 import json
 
-class Game():
+class Interface():
     
     def __init__(self):
         self.mode = 'main menu'
@@ -23,6 +23,8 @@ class Game():
         self.broadcast_time = 1 / 30
     
     def get_ui(self):
+        self.broadcast_timer += self.engine.delta_time
+        
         match self.mode:
             case 'main menu':
                 bsk.draw.text(self.engine, 'host', (200, 200), 1)
@@ -52,14 +54,17 @@ class Game():
             case 'host menu':
                 bsk.draw.text(self.engine, self.host.host, (300, 200), 1)
                 bsk.draw.text(self.engine, self.name, (300, 300), 1)
-                for i, client in enumerate(self.host.clients):
+                for i, client in enumerate(self.host.clients.values()):
                     bsk.draw.text(self.engine, client.name, (300, 400 + 100 * i), 1)
                 if len(self.host.clients):
                     bsk.draw.text(self.engine, 'start', (500, 200), 1)
+                    if self.engine.mouse.left_click and 500 < self.engine.mouse.x < 600 and 200 < self.engine.mouse.y < 300:
+                        # procedure to start the game
+                        ... 
                 
                 if self.broadcast_timer > self.broadcast_time:
                     self.broadcast_timer = 0
-                    self.host.broadcast(json.dumps({'players': [self.name] + [c.name for c in self.host.clients]}))
+                    self.host.broadcast(json.dumps({'players': [self.name] + [c.name for c in self.host.clients.values()]}))
             
             case 'client menu':
                 bsk.draw.text(self.engine, 'enter host ip', (200, 200), 1)
@@ -89,6 +94,9 @@ class Game():
                 if 'players' in self.client.data:
                     for i, name in enumerate(self.client.data['players']):
                         bsk.draw.text(self.engine, name, (300, 400 + 100 * i), 1)
+                if self.broadcast_timer > self.broadcast_time:
+                    self.broadcast_timer = 0
+                    self.client.send_message(json.dumps({'name' : self.name}))
             
     def host_game(self):
         self.host = Host(self.engine)
